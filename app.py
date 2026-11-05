@@ -6,33 +6,26 @@ import os
 # Page layout and configuration setup
 st.set_page_config(page_title="Coffee Roasters Dashboard", layout="wide")
 
-# Data loading and dynamic column matching function
+# Data loading function configured for your specific filename
 @st.cache_data
 def load_data():
-    # Double-check file extensions and try multiple engines to fix format errors
-    file_path = "dataset.xlsx"
+    # Target your exact uploaded file name directly
+    file_path = "Afficionado_Coffee_Roasters_Cleaned.xlsx"
+    
     if not os.path.exists(file_path):
-        if os.path.exists("dataset.csv"):
-            file_path = "dataset.csv"
-        else:
-            st.error("Error: Dataset file not found in directory.")
-            st.stop()
+        st.error(f"Error: '{file_path}' file not found in your repository directory.")
+        st.stop()
             
     try:
-        # First try reading as regular Excel
         df = pd.read_excel(file_path)
-    except Exception:
-        try:
-            # Fallback if the file is actually a CSV masked as .xlsx
-            df = pd.read_csv(file_path)
-        except Exception as e:
-            st.error(f"Error reading dataset file: {e}")
-            st.stop()
+    except Exception as e:
+        st.error(f"Error reading the Excel file: {e}")
+        st.stop()
         
-    # Standardize column names to lowercase and strip whitespaces
+    # Standardize column names to lowercase and strip whitespaces to prevent mismatch
     df.columns = df.columns.str.lower().str.strip()
     
-    # Dynamically find column names containing required terms
+    # Automated logic to map column headers dynamically
     qty_col = [c for c in df.columns if 'qty' in c or 'quantity' in c]
     price_col = [c for c in df.columns if 'price' in c or 'cost' in c]
     rev_col = [c for c in df.columns if 'revenue' in c or 'total' in c]
@@ -40,7 +33,7 @@ def load_data():
     prod_col = [c for c in df.columns if 'detail' in c or 'product' in c or 'item' in c]
     cat_col = [c for c in df.columns if 'category' in c]
 
-    # Map found columns or fallback to default indices safely
+    # Map variables cleanly with robust index fallbacks
     df['transaction_qty'] = pd.to_numeric(df[qty_col].iloc[:, 0], errors='coerce') if qty_col else pd.to_numeric(df.iloc[:, 3], errors='coerce')
     df['unit_price'] = pd.to_numeric(df[price_col].iloc[:, 0], errors='coerce') if price_col else pd.to_numeric(df.iloc[:, 4], errors='coerce')
     df['total_revenue'] = pd.to_numeric(df[rev_col].iloc[:, 0], errors='coerce') if rev_col else (df['transaction_qty'] * df['unit_price'])
