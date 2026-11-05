@@ -9,7 +9,6 @@ st.set_page_config(page_title="Coffee Roasters Dashboard", layout="wide")
 # Data loading function configured for your specific filename
 @st.cache_data
 def load_data():
-    # Target your exact uploaded file name directly
     file_path = "Afficionado_Coffee_Roasters_Cleaned.xlsx"
     
     if not os.path.exists(file_path):
@@ -22,7 +21,7 @@ def load_data():
         st.error(f"Error reading the Excel file: {e}")
         st.stop()
         
-    # Standardize column names to lowercase and strip whitespaces to prevent mismatch
+    # Standardize column names to lowercase and strip whitespaces
     df.columns = df.columns.str.lower().str.strip()
     
     # Automated logic to map column headers dynamically
@@ -92,10 +91,10 @@ with col2:
 
 st.divider()
 
-# Scatter Plot Matrix Analysis
+# Scatter Plot Matrix Analysis (Fixed size issue to eliminate TypeError)
 st.subheader("🎯 Product Strategy Matrix: Hero vs Underperforming Items")
 scatter_data = df_filtered.groupby(['product_detail', 'product_category']).agg(Qty_Sold=('transaction_qty', 'sum'), Revenue=('total_revenue', 'sum')).reset_index()
-fig3 = px.scatter(scatter_data, x='Qty_Sold', y='Revenue', text='product_detail', color='product_category', size='Revenue', max_scale_size=30)
-fig3.update_layout(xaxis_title="Sales Volume (Popularity)", yaxis_title="Total Generated Revenue ($)")
-fig3.update_traces(textposition='top center')
+fig3 = px.scatter(scatter_data, x='Qty_Sold', y='Revenue', text='product_detail', color='product_category',
+                 labels={'Qty_Sold': 'Sales Volume (Popularity)', 'Revenue': 'Total Revenue ($)'})
+fig3.update_traces(textposition='top center', marker=dict(size=12))
 st.plotly_chart(fig3, use_container_width=True)
